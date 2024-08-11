@@ -1,55 +1,95 @@
-/* styles/Stats.css */
-
-.stats-page {
-  padding: 20px;
+.transaction-cumulative {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: space-between;
+  margin: 40px;
+  gap: 30px;
 }
 
-.stats-box {
-  background-color: #f5f5f5;
+.stat-box {
+  flex: 1;
+  background-color: #2c2f33;
+  padding: 50px;
   border-radius: 10px;
-  padding: 15px;
-  margin: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  width: 200px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 20px 0;
+  border: 1px solid #444;
 }
 
-.stats-box h3 {
-  font-size: 1.2em;
-  margin-bottom: 10px;
+.stat-box p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f0f0f0;
 }
 
-.stats-box p {
-  font-size: 1.5em;
-  color: #333;
+.stat-box h2 {
+  margin: 15px 0 0;
+  font-size: 2.2rem;
+  color: #dcdcdc;
 }
 
-.transaction-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 30px;
+.stat-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
-.transaction-table th,
-.transaction-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.table {
+  margin: 40px;
+  width: 100;
+}
+
+.table-header {
+  display: flex;
+  background-color: #343a40;
+  color: white;
+  border-radius: 10px 10px 0 0;
+}
+
+.column {
+  flex: 1;
+  padding: 15px;
   text-align: left;
+  color: #dcdcdc;
 }
 
-.transaction-table th {
-  background-color: #f2f2f2;
+.table-header .column {
   font-weight: bold;
 }
 
-.transaction-table td a {
-  color: #1e90ff;
-  text-decoration: none;
+.table-row {
+  display: flex;
+  background-color: #2c2f33;
+  border-bottom: 1px solid #444;
+  transition: background-color 0.3s ease;
 }
 
-.transaction-table td a:hover {
-  text-decoration: underline;
+.table-row:hover {
+  background-color: #3c3f43;
+}
+
+.table-row .column {
+  padding: 15px;
+}
+
+.action-box {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  color: white;
+  width: auto;
+}
+
+.action-red {
+  background-color: #ff4d4f;
+}
+
+.action-blue {
+  background-color: #1890ff;
+}
+
+.action-green {
+  background-color: #52c41a;
 }

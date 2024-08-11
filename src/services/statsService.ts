@@ -58,3 +58,7 @@ export const fetchCompletedTransactions = async () => {
   });
   return response.data.data.completedTransactions.length;
 };
+
+export const fetchTransactionData = async () => {
+  return [];
+};
