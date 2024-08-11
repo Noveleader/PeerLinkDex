@@ -1,38 +1,29 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./utils/EventEmitter.sol";
+import "./library/EscrowLib.sol";
 
 /**
  * @title Escrow Initiator
- * @notice This escrow contract is called by Orderbook Contract as well
+ * @notice This is the escrow contract
  */
 
-contract Escrow is EventEmitter {
-    enum EscrowState {
-        Initiated,
-        Active,
-        Completed,
-        Cancelled
-    }
+contract Escrow {
+    using EscrowLib for EscrowLib.EscrowDetails;
 
-    struct EscrowDetails {
-        uint256 escrowId;
-        address initiator;
-        address participant;
-        address tokenInAddress;
-        address tokenOutAddress;
-        uint256 amountIn;
-        uint256 amountOut;
-        uint256 startingTimestamp;
-        uint256 duration;
-        EscrowState state;
-    }
+    event EscrowEventCreated(
+        uint256 indexed escrowId,
+        EscrowLib.EscrowDetails escrowDetails
+    );
+
+    event EscrowEventCancelled(uint256 indexed escrowId);
+
+    event EscrowEventCompleted(uint256 indexed escrowId);
 
     // Public Variables
     uint256 public escrowId = 0;
-    mapping(uint256 => EscrowDetails) public escrowInfo;
+    mapping(uint256 => EscrowLib.EscrowDetails) public escrowInfo;
 
     // Functions
 
@@ -53,7 +44,7 @@ contract Escrow is EventEmitter {
         uint256 amountOut,
         uint256 duration
     ) public payable {
-        EscrowDetails memory escrowDetails = EscrowDetails(
+        EscrowLib.EscrowDetails memory escrowDetails = EscrowLib.EscrowDetails(
             escrowId,
             msg.sender,
             participant,
@@ -63,15 +54,10 @@ contract Escrow is EventEmitter {
             amountOut,
             block.timestamp,
             duration,
-            EscrowState.Initiated
+            EscrowLib.EscrowState.Initiated
         );
 
         IERC20 tokenIn = IERC20(escrowDetails.tokenInAddress);
-
-        // require(
-        //     token.approve(address(this), escrowDetails.amountIn),
-        //     "Allowance Failed"
-        // );
 
         require(
             tokenIn.allowance(msg.sender, address(this)) >=
@@ -88,11 +74,11 @@ contract Escrow is EventEmitter {
             "Transfer failed"
         );
 
-        escrowDetails.state = EscrowState.Active;
+        escrowDetails.state = EscrowLib.EscrowState.Active;
 
         escrowInfo[escrowId] = escrowDetails;
 
-        emitEscrowEvent(escrowId, escrowDetails);
+        emit EscrowEventCreated(escrowId, escrowDetails);
 
         escrowId += 1;
     }
@@ -103,7 +89,7 @@ contract Escrow is EventEmitter {
      */
 
     function cancelEscrowArrangement(uint256 _escrowId) public payable {
-        EscrowDetails storage escrowDetails = escrowInfo[_escrowId];
+        EscrowLib.EscrowDetails storage escrowDetails = escrowInfo[_escrowId];
 
         require(
             msg.sender == escrowDetails.initiator ||
@@ -112,21 +98,22 @@ contract Escrow is EventEmitter {
         );
 
         require(
-            escrowDetails.state == EscrowState.Active,
+            escrowDetails.state == EscrowLib.EscrowState.Active,
             "Escrow is not active"
         );
 
         IERC20 token = IERC20(escrowDetails.tokenInAddress);
+
         require(
             token.transfer(escrowDetails.initiator, escrowDetails.amountIn),
             "Refund failed"
         );
 
-        escrowDetails.state = EscrowState.Cancelled;
+        escrowDetails.state = EscrowLib.EscrowState.Cancelled;
 
         escrowInfo[_escrowId] = escrowDetails;
 
-        emitEscrowEvent(_escrowId, escrowDetails);
+        emit EscrowEventCancelled(_escrowId);
     }
 
     /**
@@ -134,7 +121,7 @@ contract Escrow is EventEmitter {
      * @param _escrowId Takes in escrow ID as an input
      */
     function completeEscrowArrangement(uint256 _escrowId) public payable {
-        EscrowDetails memory escrowDetails = escrowInfo[_escrowId];
+        EscrowLib.EscrowDetails memory escrowDetails = escrowInfo[_escrowId];
 
         require(
             msg.sender == escrowDetails.participant,
@@ -147,18 +134,12 @@ contract Escrow is EventEmitter {
             "Escrow is Expired"
         );
 
-        IERC20 tokenOut = IERC20(escrowDetails.tokenOutAddress);
-
-        // require(
-        //     tokenOut.approve(address(this), escrowDetails.amountOut),
-        //     "Allowance Failed"
-        // );
-
         require(
-            tokenOut.allowance(msg.sender, address(this)) >=
-                escrowDetails.amountOut,
-            "Insufficient Allowance"
+            escrowDetails.state == EscrowLib.EscrowState.Active,
+            "Escrow is not active"
         );
+
+        IERC20 tokenOut = IERC20(escrowDetails.tokenOutAddress);
 
         require(
             tokenOut.transferFrom(
@@ -173,20 +154,28 @@ contract Escrow is EventEmitter {
         IERC20 tokenIn = IERC20(escrowDetails.tokenInAddress);
 
         require(
-            tokenOut.transfer(escrowDetails.initiator, escrowDetails.amountOut),
+            tokenOut.transferFrom(
+                address(this),
+                escrowDetails.initiator,
+                escrowDetails.amountOut
+            ),
             "Transfer Failed to Initiator"
         );
 
         require(
-            tokenIn.transfer(escrowDetails.participant, escrowDetails.amountIn),
+            tokenIn.transferFrom(
+                address(this),
+                escrowDetails.participant,
+                escrowDetails.amountIn
+            ),
             "Transfer Failed to Participant"
         );
 
-        escrowDetails.state = EscrowState.Completed;
+        escrowDetails.state = EscrowLib.EscrowState.Completed;
 
         escrowInfo[_escrowId] = escrowDetails;
 
-        emitEscrowEvent(_escrowId, escrowDetails);
+        emit EscrowEventCompleted(escrowId);
     }
 
     // View functions
@@ -196,7 +185,7 @@ contract Escrow is EventEmitter {
 
     function getEscrowInfo(
         uint256 _escrowId
-    ) public view returns (EscrowDetails memory) {
+    ) public view returns (EscrowLib.EscrowDetails memory) {
         return escrowInfo[_escrowId];
     }
 }

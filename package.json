@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.6.0",
     "@rainbow-me/rainbowkit": "^2.1.4",
     "@tanstack/react-query": "^5.51.23",
     "@testing-library/jest-dom": "^5.17.0",
@@ -12,6 +13,7 @@
     "@types/node": "^16.18.104",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "axios": "^1.7.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
