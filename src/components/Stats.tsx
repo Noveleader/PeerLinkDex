@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
 import {
-  fetchTotalTransactions,
   fetchCancelledTransactions,
   fetchCreatedTransactions,
   fetchCompletedTransactions,
-  fetchTransactionData, // Assuming this function returns the transaction data
+  fetchTransactionData,
 } from "../services/statsService";
 import "../styles/Stats.css";
 
@@ -14,24 +14,24 @@ const Stats: React.FC = () => {
   const [createdTransactions, setCreatedTransactions] = useState<number>(0);
   const [completedTransactions, setCompletedTransactions] = useState<number>(0);
   const [transactionData, setTransactionData] = useState<any[]>([]);
+  const { address } = useAccount();
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const total = await fetchTotalTransactions();
-  //     const cancelled = await fetchCancelledTransactions();
-  //     const created = await fetchCreatedTransactions();
-  //     const completed = await fetchCompletedTransactions();
-  //     const transactions = await fetchTransactionData();
+  useEffect(() => {
+    async function fetchData() {
+      const cancelled = await fetchCancelledTransactions();
+      const created = await fetchCreatedTransactions(address as string);
+      const completed = await fetchCompletedTransactions();
+      const transactions = await fetchTransactionData();
 
-  //     setTotalTransactions(total);
-  //     setCancelledTransactions(cancelled);
-  //     setCreatedTransactions(created);
-  //     setCompletedTransactions(completed);
-  //     setTransactionData(transactions);
-  //   }
+      setTotalTransactions(cancelled + created + completed);
+      setCancelledTransactions(cancelled);
+      setCreatedTransactions(created);
+      setCompletedTransactions(completed);
+      setTransactionData(transactions);
+    }
 
-  //   fetchData();
-  // }, []);
+    fetchData();
+  }, []);
 
   const getActionClassName = (action: string) => {
     switch (action) {
