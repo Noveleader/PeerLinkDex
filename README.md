@@ -1,6 +1,8 @@
 # PeerLinkDex
 
-Peerlinkdex backend smart contracts is build in Solidity and we are deploying it on EVM based chains. The frontend is built using React and TS. 
+Peerlinkdex backend smart contracts is build in Solidity and deployed on `base-sepolia`. The frontend is built using React and TS. 
+
+Contract Address of Escrow Contract: `0x06BEeD7f4c292661Ae6c464D1581f7f2F3ecDAe1`
 
 Subgraph is deployed on GoldSky in order to index on-chain data and show it in the frontend. 
 
